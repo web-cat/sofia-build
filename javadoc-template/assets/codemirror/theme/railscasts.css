@@ -1,0 +1,73 @@
+/*
+  http://railscasts.com/ dark theme
+  Ported to CodeMirror by Tony Allevato
+*/
+
+.CodeMirror {
+  line-height: 15px;
+}
+
+.cm-s-railscasts {
+  font-family: Menlo, 'Bitstream Vera Sans Mono', 'DejaVu Sans Mono',
+               'Courier New', monospace !important;
+  font-size: 12px;
+}
+
+.cm-s-railscasts {
+  background: #232323;
+  color: #E6E0DB;
+  text-shadow: none !important;
+}
+
+.cm-s-railscasts div.CodeMirror-selected {
+  background: #55544B !important;
+}
+
+.cm-s-railscasts .CodeMirror-cursor {
+  border-left: 1px solid white !important;
+}
+
+.cm-s-railscasts .CodeMirror-lines { /*editable code holder*/
+  margin: auto;
+}
+
+div.CodeMirror span.CodeMirror-matchingbracket {
+  color: #7EFC7E;
+}
+
+.cm-s-railscasts .CodeMirror-gutter {
+  background: #363636;
+  border-right: 1px solid #aaa;
+  padding-right: 3px;
+  min-width: 2.5em;
+}
+
+.cm-s-railscasts .CodeMirror-gutter-text {
+  color: #999;
+}
+
+/* Syntactic elements */
+
+.cm-s-railscasts span.cm-keyword    { color: #CB7832; } /**/
+.cm-s-railscasts span.cm-atom       { color: #C2B470; }
+.cm-s-railscasts span.cm-number     { color: #A4C260; } /**/
+.cm-s-railscasts span.cm-def        { color: white; }
+.cm-s-railscasts span.cm-variable   { color: #D9BF8C; }
+.cm-s-railscasts span.cm-variable-2 { color: #669199; }
+.cm-s-railscasts span.cm-variable-3 { color: white; }
+.cm-s-railscasts span.cm-property   { color: #92A75C; }
+/*.cm-s-railscasts span.cm-operator   { color: #92A75C; }*/
+.cm-s-railscasts span.cm-comment    { color: #BC9358; font-style: italic; } /**/
+.cm-s-railscasts span.cm-string     { color: #A4C260; } /**/
+.cm-s-railscasts span.cm-string-2   { color: #f50;}
+.cm-s-railscasts span.cm-meta       { color: #6C9CBD; }
+.cm-s-railscasts span.cm-error      { color: #9d1e15; }
+.cm-s-railscasts span.cm-qualifier  { color: #555; }
+.cm-s-railscasts span.cm-builtin    { color: #ff9e59; }
+.cm-s-railscasts span.cm-bracket    { color: #EBEFE7; }
+.cm-s-railscasts span.cm-tag        { color: #CB7832; }
+.cm-s-railscasts span.cm-attribute  { color: #6C9CBD; }
+.cm-s-railscasts span.cm-header     { color: #a0a; }
+.cm-s-railscasts span.cm-quote      { color: #090; }
+.cm-s-railscasts span.cm-hr         { color: #999; }
+.cm-s-railscasts span.cm-link       { color: #00c; }

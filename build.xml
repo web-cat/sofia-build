@@ -1,0 +1,223 @@
+<!--
+  CAVEAT:
+
+  This build file assumes that the individual JAR files for the separate
+  Sofia projects have already been built. In that sense, it's intended to be
+  run from within an Eclipse workspace that auto-builds them, not from the
+  command-line where they would need to be built from scratch.
+
+  A future version of this build script should automatically build them if
+  necessary.
+-->
+<project name="sofia" default="single-jar" basedir=".">
+
+    <property file="build.properties"/>
+
+    <!--
+      To build, you MUST define the following properties in local.properties:
+
+      sofiaPath: the path to a directory containing the checked out Sofia
+          projects (sofia-core, sofia-graphics, etc.)
+
+      If you wish to exclude any projects from the generated JAR or Javadoc
+      (for example, if you have sofia-maps checked out but want to build a
+      distribution without it), set the following properties to true:
+
+      exclude.sofia-audio, exclude.sofia-graphics, exclude.sofia-maps
+
+      You cannot exclude core. If you try to build without sofia-core checked
+      out, the build will fail.
+    -->
+    <property file="local.properties"/>
+
+
+    <!-- Check availability of project dependencies. -->
+    <available property="doclava.exists" file="lib/${doclava.jar}"/>
+
+
+    <!-- Check availability of Sofia projects. -->
+    <condition property="include.sofia.core">
+        <available file="${sofiaPath}/sofia-core"/>
+    </condition>
+
+    <condition property="include.sofia.graphics">
+        <and>
+            <available file="${sofiaPath}/sofia-graphics"/>
+            <isfalse value="${exclude.sofia-graphics}"/>
+        </and>
+    </condition>
+
+    <condition property="include.sofia.maps">
+        <and>
+            <available file="${sofiaPath}/sofia-maps"/>
+            <isfalse value="${exclude.sofia-maps}"/>
+        </and>
+    </condition>
+
+
+    <!--
+      A macro that downloads and extracts required JAR files from the web and
+      puts them in the lib/ directory.
+    -->
+    <macrodef name="getlib">
+        <attribute name="url"/>
+        <attribute name="extract"/>
+        <sequential>
+            <mkdir dir="tmp"/>
+            <get src="@{url}" dest="tmp"/>
+            <unzip dest="tmp">
+                <fileset dir="tmp" includes="*.zip"/>
+                <patternset includes="@{extract}"/>
+            </unzip>
+            <copy todir="lib" flatten="true">
+                <fileset dir="tmp" includes="@{extract}"/>
+            </copy>
+            <delete dir="tmp"/>
+        </sequential>
+    </macrodef>
+
+
+    <!--
+      Copy supporting image files from the source package locations to the
+      generated Javadoc location, since Doclava doesn't do this automatically.
+    -->
+    <macrodef name="copydocfiles">
+        <attribute name="name"/>
+        <sequential>
+            <copy todir="build/doc/reference/sofia/@{name}/doc-files"
+                failonerror="false" quiet="true">
+                <fileset dir="${sofiaPath}/sofia-@{name}/src/sofia/@{name}/doc-files">
+                    <include name="**" if="include.sofia.@{name}"/>
+                </fileset>
+            </copy>
+        </sequential>
+    </macrodef>
+
+
+    <!--
+      Check for the existence of sofia-core and kill the build if it isn't
+      found.
+    -->
+    <target name="-check-core">
+        <fail unless="include.sofia.core"
+              message="The sofia-core project must be available. Please clone it."/>
+    </target>
+
+
+    <!-- Initialize the build area. -->
+    <target name="-init" depends="-check-core, -get-libs">
+        <mkdir dir="build"/>
+    </target>
+
+
+    <!-- Download Doclava if necessary. -->
+    <target name="-get-doclava" unless="doclava.exists">
+        <getlib url="${doclava.download.url}"
+                extract="${doclava.unzip.pattern}"/>
+    </target>
+
+
+    <!-- Download all dependencies if necessary. -->
+    <target name="-get-libs" depends="-get-doclava"/>
+
+
+    <!-- Build everything: libraries and Javadoc. -->
+    <target name="all"
+        depends="single-jar, javadoc"/>
+
+
+    <!--
+      Build the single JAR form of the library, with all necessary
+      dependencies.
+    -->
+    <target name="single-jar" depends="-init">
+        <jar destfile="build/sofia-with-dependencies.jar">
+            <zipgroupfileset dir="${sofiaPath}/sofia-core">
+                <include name="bin/*.jar" if="include.sofia.core"/>
+                <include name="libs/*.jar" if="include.sofia.core"/>
+            </zipgroupfileset>
+            <zipgroupfileset dir="${sofiaPath}/sofia-graphics">
+                <include name="bin/*.jar" if="include.sofia.graphics"/>
+                <include name="libs/*.jar" if="include.sofia.graphics"/>
+            </zipgroupfileset>
+            <zipgroupfileset dir="${sofiaPath}/sofia-maps">
+                <include name="bin/*.jar" if="include.sofia.maps"/>
+                <include name="libs/*.jar" if="include.sofia.maps"/>
+            </zipgroupfileset>
+            <zipgroupfileset dir="${sofiaPath}/sofia-maps">
+                <include name="bin/*.jar" if="include.sofia.maps"/>
+                <include name="libs/*.jar" if="include.sofia.maps"/>
+            </zipgroupfileset>
+            <zipgroupfileset dir="${sofiaPath}/sofia-audio">
+                <include name="bin/*.jar" if="include.sofia.audio"/>
+                <include name="libs/*.jar" if="include.sofia.audio"/>
+            </zipgroupfileset>
+        </jar>
+    </target>
+
+
+    <!-- Generate the Javadoc using Doclava and our custom stylesheets. -->
+    <target name="javadoc">
+        <delete dir="build/doc"/>
+        <javadoc
+               destdir="build/doc"
+               docletpath="lib/doclava-1.0.6.jar"
+               bootclasspath="${javahome}/jre/lib/rt.jar">
+            <sourcefiles>
+                <fileset dir="${sofiaPath}/sofia-core/src">
+                    <include name="**/*.java" if="include.sofia.core"/>
+                    <exclude name="**/internal/**"/>
+                </fileset>
+                <fileset dir="${sofiaPath}/sofia-graphics/src">
+                    <include name="**/*.java" if="include.sofia.graphics"/>
+                    <exclude name="**/internal/**"/>
+                </fileset>
+                <fileset dir="${sofiaPath}/sofia-maps/src">
+                    <include name="**/*.java" if="include.sofia.maps"/>
+                    <exclude name="**/internal/**"/>
+                </fileset>
+            </sourcefiles>
+            <doclet name="com.google.doclava.Doclava">
+                <param name="-stubs" value="build/stubs"/>
+                <param name="-hdf"/>
+                <param name="project.name"/>
+                <param name="Sofia API Reference"/>
+                <param name="-hdf"/>
+                <param name="bootstrap.url"/>
+                <param name="http://sofia.cs.vt.edu/bootstrap"/>
+
+                <!-- versioning -->
+                <!-- param name="-since"/>
+                <param name="current.xml"/>
+                <param name="v1"/ -->
+
+                <param name="-apiversion" value="v1"/>
+
+                <!-- customization -->
+                <param name="-templatedir"/>
+                <param name="javadoc-template"/>
+
+                <!-- federation -->
+                <param name="-federate"/><param name="JDK"/>
+                <param name="http://download.oracle.com/javase/6/docs/api/index.html?"/>
+                <param name="-federationxml"/><param name="JDK"/>
+                <param name="http://doclava.googlecode.com/svn/static/api/openjdk-6.xml"/>
+
+                <param name="-federate"/><param name="Android"/>
+                <param name="http://developer.android.com/reference"/>
+                <param name="-federationxml"/><param name="Android"/>
+                <param name="http://doclava.googlecode.com/svn/static/api/android-8.xml"/>
+            </doclet>
+        </javadoc>
+
+        <!--
+          Copy any images and other resources to their appropriate locations
+          since Doclava doesn't do this for us automatically yet.
+        -->
+        <copydocfiles name="core"/>
+        <copydocfiles name="graphics"/>
+        <copydocfiles name="maps"/>
+        <copydocfiles name="audio"/>
+    </target>
+
+</project>
