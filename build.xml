@@ -54,6 +54,13 @@
         </and>
     </condition>
 
+    <condition property="include.sofia.audio">
+        <and>
+            <available file="${sofiaPath}/sofia-audio"/>
+            <isfalse value="${exclude.sofia-audio}"/>
+        </and>
+    </condition>
+
 
     <!--
       A macro that downloads and extracts required JAR files from the web and
@@ -174,6 +181,10 @@
                 </fileset>
                 <fileset dir="${sofiaPath}/sofia-maps/src">
                     <include name="**/*.java" if="include.sofia.maps"/>
+                    <exclude name="**/internal/**"/>
+                </fileset>
+                <fileset dir="${sofiaPath}/sofia-audio/src">
+                    <include name="**/*.java" if="include.sofia.audio"/>
                     <exclude name="**/internal/**"/>
                 </fileset>
             </sourcefiles>
